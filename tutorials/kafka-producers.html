@@ -1,0 +1,116 @@
+<h1>Producers</h1>
+
+<p>
+  A <strong>producer</strong> is any application that publishes events to a Kafka topic.
+  Producers are the source of data in a Kafka system.
+</p>
+
+<h2>Producer Basics</h2>
+
+<p>Here's a minimal producer in Java (confluent Kafka client):</p>
+
+<pre><code>Properties props = new Properties();
+props.put("bootstrap.servers", "localhost:9092");
+props.put("key.serializer",   "org.apache.kafka.common.serialization.StringSerializer");
+props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+
+KafkaProducer&lt;String, String&gt; producer = new KafkaProducer&lt;&gt;(props);
+
+producer.send(new ProducerRecord&lt;&gt;("orders", "order-42", "{\"item\":\"laptop\"}"));
+
+producer.close();</code></pre>
+
+<h2>Key Producer Settings</h2>
+
+<h3>Acknowledgements (acks)</h3>
+<p>
+  Controls how many partition replicas must acknowledge a write before it's considered
+  successful:
+</p>
+
+<table style="width:100%; border-collapse: collapse; margin:1rem 0;">
+  <thead>
+    <tr style="border-bottom:2px solid var(--border); text-align:left;">
+      <th style="padding:0.5rem 1rem 0.5rem 0;">acks</th>
+      <th style="padding:0.5rem 0;">Behavior</th>
+      <th style="padding:0.5rem 0 0.5rem 1rem;">Durability</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><code>0</code></td>
+      <td style="padding:0.5rem 0;">Fire-and-forget. No acknowledgment.</td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">❌ None</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><code>1</code></td>
+      <td style="padding:0.5rem 0;">Leader acknowledges (default).</td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">⚠️ Partial</td>
+    </tr>
+    <tr>
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><code>all</code></td>
+      <td style="padding:0.5rem 0;">All in-sync replicas acknowledge.</td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">✅ Strongest</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="callout tip">
+  <strong>Recommendation</strong>
+  Use <code>acks=all</code> in production unless you have a specific reason not to. The
+  latency cost is small (one extra RTT to followers), and the durability gain is significant.
+</div>
+
+<h3>Batching</h3>
+<p>
+  For throughput, producers batch events before sending them to the broker:
+</p>
+
+<ul>
+  <li><strong>linger.ms</strong> — how long to wait for more events before sending a batch (default 0)</li>
+  <li><strong>batch.size</strong> — max bytes for a single batch (default 16 KB)</li>
+</ul>
+
+<pre><code>props.put("linger.ms",  5);    // wait up to 5ms to fill a batch
+props.put("batch.size", 32768); // 32 KB batches</code></pre>
+
+<h3>Compression</h3>
+<p>
+  Compress producer data to reduce network and storage usage. <code>gzip</code> and
+  <code>snappy</code> are common choices.
+</p>
+
+<pre><code>props.put("compression.type", "snappy");</code></pre>
+
+<h2>Idempotent Producers</h2>
+
+<p>
+  Set <code>enable.idempotence=true</code> to prevent duplicate events caused by
+  network retries. The producer assigns a unique sequence number to each event, and the
+  broker deduplicates them. This gives <strong>exactly-once semantics</strong> for
+  producer-to-broker writes.
+</p>
+
+<pre><code>props.put("enable.idempotence", true);
+// Also recommended for idempotent mode:
+props.put("acks", "all");</code></pre>
+
+<h2>Async Send with Callback</h2>
+
+<pre><code>producer.send(
+  new ProducerRecord&lt;&gt;("orders", "order-42", event),
+  (metadata, exception) -> {
+    if (exception != null) {
+      log.error("Send failed", exception);
+    } else {
+      log.info("Sent to partition {} at offset {}",
+        metadata.partition(), metadata.offset());
+    }
+  }
+);</code></pre>
+
+<h2>Key Takeaway</h2>
+<p>
+  Configure your producer for your <strong>durability vs. latency</strong> trade-off.
+  Use idempotent producers for critical data paths. Batch and compress for throughput.
+</p>

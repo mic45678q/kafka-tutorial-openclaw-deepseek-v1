@@ -1,0 +1,42 @@
+[
+  {
+    "id": "kafka-intro",
+    "title": "What is Kafka?",
+    "slug": "what-is-kafka",
+    "description": "Introduction to Apache Kafka — a distributed event streaming platform. Learn the core concepts: topics, partitions, brokers, and how Kafka fits into modern architectures.",
+    "file": "tutorials/kafka-intro.html",
+    "order": 1
+  },
+  {
+    "id": "kafka-topics",
+    "title": "Topics & Partitions",
+    "slug": "topics-partitions",
+    "description": "Deep dive into Kafka topics, partitions, replication, and partitioning strategies. Understand how data is organized and scaled.",
+    "file": "tutorials/kafka-topics.html",
+    "order": 2
+  },
+  {
+    "id": "kafka-producers",
+    "title": "Producers",
+    "slug": "producers",
+    "description": "How to write data to Kafka. Producer APIs, batching, acknowledgements, idempotency, and key-based partitioning.",
+    "file": "tutorials/kafka-producers.html",
+    "order": 3
+  },
+  {
+    "id": "kafka-consumers",
+    "title": "Consumers & Consumer Groups",
+    "slug": "consumers-consumer-groups",
+    "description": "Reading data from Kafka. Consumer groups, offset management, rebalancing, and exactly-once semantics.",
+    "file": "tutorials/kafka-consumers.html",
+    "order": 4
+  },
+    {
+    "id": "new-tutorial",
+    "title": "New tutorial / TODO",
+    "slug": "new-tutorial",
+    "description": "TODO",
+    "file": "tutorials/kafka-consumers.html",
+    "order": 5
+  }
+]

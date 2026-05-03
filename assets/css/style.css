@@ -1,0 +1,325 @@
+/* ── Reset & Base ──────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:        #0f1117;
+  --surface:   #1a1d27;
+  --surface2:  #232740;
+  --border:    #2d3154;
+  --text:      #e1e3ed;
+  --text-dim:  #8b8fa3;
+  --accent:    #e25a3a;   /* Kafka orange */
+  --accent2:   #2b9af3;   /* blue accent */
+  --success:   #3fb950;
+  --code-bg:   #161822;
+  --radius:    8px;
+  --sidebar-w: 280px;
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.7;
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 2rem 0;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.sidebar-header {
+  padding: 0 1.5rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1rem;
+}
+
+.sidebar-header h1 {
+  font-size: 1.15rem;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar-header h1::before {
+  content: "☕";
+  font-size: 1.3rem;
+}
+
+.sidebar-header .subtitle {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sidebar nav { padding: 0 1rem; }
+
+.tutorial-link {
+  display: block;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius);
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+  margin-bottom: 0.2rem;
+}
+
+.tutorial-link:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.tutorial-link.active {
+  background: var(--surface2);
+  color: var(--accent);
+  border-left-color: var(--accent);
+  font-weight: 600;
+}
+
+/* ── Main Content ─────────────────────────────────────────── */
+.main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  max-width: 900px;
+  padding: 3rem 4rem 6rem;
+}
+
+.main h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.03em;
+  line-height: 1.3;
+}
+
+.main h1 .badge {
+  font-size: 0.7rem;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.15rem 0.6rem;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.main h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin: 2rem 0 0.75rem;
+  color: var(--accent2);
+  letter-spacing: -0.02em;
+}
+
+.main h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.5rem;
+}
+
+.main p { margin-bottom: 1rem; }
+
+.main ul, .main ol {
+  margin: 0 0 1rem 1.5rem;
+}
+
+.main li { margin-bottom: 0.4rem; }
+
+.main a {
+  color: var(--accent2);
+  text-decoration: none;
+}
+
+.main a:hover { text-decoration: underline; }
+
+/* ── Code Blocks ──────────────────────────────────────────── */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin: 1.25rem 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+}
+
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+  background: var(--code-bg);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+pre code { background: none; padding: 0; border-radius: 0; }
+
+/* ── Callout / Info Box ───────────────────────────────────── */
+.callout {
+  background: var(--surface2);
+  border-left: 4px solid var(--accent2);
+  padding: 1rem 1.25rem;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  margin: 1.5rem 0;
+  font-size: 0.92rem;
+}
+
+.callout.warn { border-left-color: #d29922; }
+.callout.tip  { border-left-color: var(--success); }
+
+.callout strong:first-child {
+  display: block;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--accent2);
+}
+
+.callout.warn strong:first-child { color: #d29922; }
+.callout.tip strong:first-child  { color: var(--success); }
+
+/* ── Landing Page ─────────────────────────────────────────── */
+.landing h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.landing .lead {
+  font-size: 1.1rem;
+  color: var(--text-dim);
+  max-width: 600px;
+  margin-bottom: 2rem;
+}
+
+.tutorial-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tutorial-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tutorial-card:hover {
+  border-color: var(--accent);
+  background: var(--surface2);
+  transform: translateX(4px);
+}
+
+.tutorial-card .num {
+  width: 2rem;
+  height: 2rem;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.tutorial-card .info h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.tutorial-card .info p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+/* ── Navigation buttons ───────────────────────────────────── */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.nav-buttons a {
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: all 0.15s;
+}
+
+.nav-buttons a:hover {
+  background: var(--surface2);
+  border-color: var(--accent);
+}
+
+.nav-buttons .next { margin-left: auto; }
+
+/* ── Scrollbar ────────────────────────────────────────────── */
+.sidebar::-webkit-scrollbar { width: 6px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Responsive ───────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 0;
+  }
+
+  .sidebar-header { padding-bottom: 1rem; }
+
+  .sidebar nav { display: flex; gap: 0.25rem; overflow-x: auto; padding-bottom: 0.5rem; }
+  .tutorial-link {
+    white-space: nowrap;
+    border-left: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.4rem 0.75rem;
+  }
+  .tutorial-link.active { border-left: none; border-bottom-color: var(--accent); }
+
+  .main {
+    margin-left: 0;
+    padding: 2rem 1.5rem 4rem;
+  }
+
+  .landing h1 { font-size: 1.8rem; }
+}

@@ -1,0 +1,146 @@
+<h1>Consumers &amp; Consumer Groups</h1>
+
+<p>
+  A <strong>consumer</strong> reads events from Kafka topics. Consumers work together in
+  <strong>consumer groups</strong> to scale reading and provide fault tolerance.
+</p>
+
+<h2>Consumer Basics</h2>
+
+<pre><code>Properties props = new Properties();
+props.put("bootstrap.servers",    "localhost:9092");
+props.put("group.id",             "order-processor");
+props.put("key.deserializer",     "org.apache.kafka.common.serialization.StringDeserializer");
+props.put("value.deserializer",   "org.apache.kafka.common.serialization.StringDeserializer");
+props.put("auto.offset.reset",    "earliest");
+
+KafkaConsumer&lt;String, String&gt; consumer = new KafkaConsumer&lt;&gt;(props);
+consumer.subscribe(Arrays.asList("orders"));
+
+while (true) {
+  ConsumerRecords&lt;String, String&gt; records = consumer.poll(Duration.ofMillis(100));
+  for (ConsumerRecord&lt;String, String&gt; record : records) {
+    System.out.printf("offset=%d, key=%s, value=%s%n",
+      record.offset(), record.key(), record.value());
+  }
+}</code></pre>
+
+<h2>Consumer Groups</h2>
+<p>
+  Consumers with the same <code>group.id</code> belong to the same <strong>consumer group</strong>.
+  Each partition is assigned to exactly one consumer in the group — this is how Kafka
+  scales consumption.
+</p>
+
+<pre><code># Example: Topic "orders" has 4 partitions
+# Consumer group "order-processor" has 3 members
+#
+# Partition 0 → Consumer A
+# Partition 1 → Consumer B
+# Partition 2 → Consumer C
+# Partition 3 → Consumer A  (one consumer handles multiple partitions)
+</code></pre>
+
+<div class="callout warn">
+  <strong>Note</strong>
+  If you have more consumers than partitions in a group, the extra consumers sit idle.
+  Aim for <code>consumers ≤ partitions</code> in a group.
+</div>
+
+<h2>Offset Management</h2>
+
+<p>
+  Kafka tracks which events each consumer group has read using <strong>offsets</strong>.
+  Offsets are committed periodically so consumers can resume from where they left off
+  after a restart.
+</p>
+
+<h3>Auto-commit (default)</h3>
+<pre><code>props.put("enable.auto.commit", "true");
+props.put("auto.commit.interval.ms", "5000");</code></pre>
+<p>Offsets are committed automatically every 5 seconds. Simple but can cause duplicate processing on restart.</p>
+
+<h3>Manual commit</h3>
+<pre><code>props.put("enable.auto.commit", "false");
+
+// After processing a batch:
+consumer.commitSync();   // Blocks until committed
+// or
+consumer.commitAsync();  // Non-blocking</code></pre>
+
+<h2>Rebalancing</h2>
+
+<p>
+  When a consumer joins or leaves a group, a <strong>rebalance</strong> occurs:
+  partitions are reassigned across the group. During a rebalance, no consuming happens.
+</p>
+
+<p>Two rebalance protocols:</p>
+
+<ul>
+  <li><strong>Eager</strong> (old) — all consumers stop, partitions revoked, then reassigned. Stop-the-world.</li>
+  <li><strong>Cooperative</strong> (recommended) — consumers keep their partitions and only reassign a subset. Smoother.</li>
+</ul>
+
+<pre><code>props.put("partition.assignment.strategy",
+  "org.apache.kafka.clients.consumer.CooperativeStickyAssignor");</code></pre>
+
+<h2>Consumer Settings to Know</h2>
+
+<table style="width:100%; border-collapse: collapse; margin:1rem 0;">
+  <thead>
+    <tr style="border-bottom:2px solid var(--border); text-align:left;">
+      <th style="padding:0.5rem 1rem 0.5rem 0;">Setting</th>
+      <th style="padding:0.5rem 0;">Default</th>
+      <th style="padding:0.5rem 0 0.5rem 1rem;">What it does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><code>auto.offset.reset</code></td>
+      <td style="padding:0.5rem 0;"><code>latest</code></td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">Where to start when no committed offset exists</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><code>max.poll.records</code></td>
+      <td style="padding:0.5rem 0;"><code>500</code></td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">Max events per poll() call</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><code>session.timeout.ms</code></td>
+      <td style="padding:0.5rem 0;"><code>45000</code></td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">Max time before consumer is declared dead</td>
+    </tr>
+    <tr>
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><code>max.poll.interval.ms</code></td>
+      <td style="padding:0.5rem 0;"><code>300000</code></td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">Max time between poll() calls before rebalance</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Exactly-Once Semantics</h2>
+
+<p>
+  For end-to-end exactly-once processing, combine:
+</p>
+
+<ol>
+  <li><strong>Idempotent producer</strong> (<code>enable.idempotence=true</code>)</li>
+  <li><strong>Transactional producer</strong> — wrap produce + consume in a transaction</li>
+  <li><code>isolation.level=read_committed</code> on the consumer</li>
+</ol>
+
+<div class="callout tip">
+  <strong>Tip</strong>
+  For most use cases, <strong>at-least-once</strong> (auto-commit + idempotent producer) +
+  deduplication in your sink is simpler than full exactly-once. Only go transactional
+  when you truly need it.
+</div>
+
+<h2>Key Takeaway</h2>
+<p>
+  Consumer groups let you scale reading horizontally. Tune <code>max.poll.records</code>
+  and <code>session.timeout.ms</code> for your processing speed. Use cooperative rebalancing
+  for smoother operation.
+</p>

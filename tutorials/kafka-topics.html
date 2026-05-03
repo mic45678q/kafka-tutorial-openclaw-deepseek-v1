@@ -1,0 +1,105 @@
+<h1>Topics &amp; Partitions <span class="badge">Core</span></h1>
+
+<p>
+  Topics and partitions are the backbone of Kafka's storage model. Understanding how they work
+  is essential to designing good Kafka architectures.
+</p>
+
+<h2>Topics</h2>
+<p>
+  A <strong>topic</strong> is a logical channel to which producers publish events and from which
+  consumers subscribe. Topics are multi-subscriber — many consumers can read from the same topic
+  independently.
+</p>
+
+<pre><code># Create a topic with 3 partitions and replication factor 2
+kafka-topics.sh --bootstrap-server localhost:9092 \
+  --create --topic orders \
+  --partitions 3 \
+  --replication-factor 2</code></pre>
+
+<h2>Partitions</h2>
+<p>
+  Each topic is split into <strong>partitions</strong>. Partitioning is what gives Kafka its
+  horizontal scalability:
+</p>
+
+<ul>
+  <li>Each partition is an <strong>ordered, immutable log</strong> of events</li>
+  <li>New events are always appended to the end of a partition</li>
+  <li>Each event gets a sequential <strong>offset</strong> (its position within the partition)</li>
+  <li>Partitions can live on different brokers in the cluster</li>
+</ul>
+
+<div class="callout tip">
+  <strong>Remember</strong>
+  Order is guaranteed <em>within</em> a partition, but not across partitions.
+  If you need strict ordering for a specific entity (e.g., all events for user-42),
+  use a consistent key so they land in the same partition.
+</div>
+
+<h2>Partitioning Strategies</h2>
+
+<h3>Round-robin (no key)</h3>
+<p>
+  If no key is provided, Kafka distributes events across partitions in a round-robin fashion.
+  This gives good load balancing but no ordering guarantee.
+</p>
+
+<pre><code># Round-robin — no key specified
+producer.send(new ProducerRecord&lt;&gt;("orders", null, event));</code></pre>
+
+<h3>Key-based partitioning</h3>
+<p>
+  If a key is provided, Kafka hashes the key to determine the partition. All events with the
+  same key go to the same partition, preserving order for that key.
+</p>
+
+<pre><code># Key-based — all events for order-123 land in the same partition
+producer.send(new ProducerRecord&lt;&gt;("orders", "order-123", event));</code></pre>
+
+<h3>Custom partitioner</h3>
+<p>
+  You can implement your own partitioner for custom distribution logic — for example,
+  pinning high-priority events to a dedicated partition.
+</p>
+
+<div class="callout warn">
+  <strong>⚠️ Warning</strong>
+  Avoid creating too many partitions. Each partition adds overhead (file handles, memory).
+  A good rule of thumb: start with <code>partitions = max(3, number_of_brokers * 2)</code>
+  and monitor performance.
+</div>
+
+<h2>Replication</h2>
+<p>
+  Each partition has <strong>replicas</strong> across multiple brokers for fault tolerance.
+</p>
+
+<ul>
+  <li><strong>Leader</strong> — the replica that handles all reads and writes for a partition</li>
+  <li><strong>Followers</strong> — replicas that stay in sync with the leader</li>
+  <li>If the leader broker fails, one follower becomes the new leader</li>
+</ul>
+
+<pre><code># Describe a topic to see partition leadership
+kafka-topics.sh --bootstrap-server localhost:9092 \
+  --describe --topic orders
+
+# Output:
+# Topic: orders  Partition: 0  Leader: 1  Replicas: 1,2  ISR: 1,2
+# Topic: orders  Partition: 1  Leader: 2  Replicas: 2,3  ISR: 2,3
+# Topic: orders  Partition: 2  Leader: 3  Replicas: 3,1  ISR: 3,1
+</code></pre>
+
+<p>
+  <strong>ISR</strong> = In-Sync Replicas. These are the followers that are fully caught up
+  with the leader. If a follower falls too far behind, it's removed from the ISR set.
+</p>
+
+<h2>Key Takeaway</h2>
+<p>
+  Partitions are your unit of parallelism. More partitions = more concurrent consumers,
+  but also more operational overhead. Design your topics with a clear partitioning strategy
+  based on your data and access patterns.
+</p>

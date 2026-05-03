@@ -1,0 +1,99 @@
+<h1>What is Kafka?</h1>
+
+<p>
+  Apache Kafka is a <strong>distributed event streaming platform</strong>. Originally built at LinkedIn
+  and open-sourced under the Apache Software Foundation, it's designed to handle high-throughput,
+  fault-tolerant, real-time data feeds.
+</p>
+
+<h2>Core Concepts</h2>
+
+<h3>Event</h3>
+<p>
+  An <strong>event</strong> records the fact that "<em>something happened</em>" in your system.
+  Every event has a key, a value, a timestamp, and optional metadata (headers).
+  In Kafka, an event is also called a <strong>message</strong> or <strong>record</strong>.
+</p>
+
+<pre><code>Event {
+  Key:       "user-42"
+  Value:     "{\"action\":\"page_view\",\"page\":\"/pricing\"}"
+  Timestamp: 2026-04-28T20:00:00Z
+  Headers:   { "source": "web-app" }
+}</code></pre>
+
+<h3>Topic</h3>
+<p>
+  Events are organized into <strong>topics</strong>. A topic is a named category or feed
+  — think of it like a table in a database or a folder in a filesystem.
+  Producers write events to topics; consumers read events from topics.
+</p>
+
+<h3>Partition</h3>
+<p>
+  Topics are split into <strong>partitions</strong>. Each partition is an ordered, immutable
+  sequence of events. Partitions are what give Kafka its scalability — different partitions
+  can live on different brokers and be consumed in parallel.
+</p>
+
+<h3>Broker</h3>
+<p>
+  A Kafka <strong>broker</strong> is a server that stores data and serves clients.
+  A cluster is a group of brokers working together. A common production setup has
+  3+ brokers for fault tolerance.
+</p>
+
+<h2>Why Use Kafka?</h2>
+
+<ul>
+  <li><strong>High throughput</strong> — millions of events per second on modest hardware</li>
+  <li><strong>Durability</strong> — data is persisted to disk and replicated across brokers</li>
+  <li><strong>Scalability</strong> — add brokers to handle more data without downtime</li>
+  <li><strong>Decoupling</strong> — producers and consumers don't need to know about each other</li>
+  <li><strong>Stream processing</strong> — process events in real-time with Kafka Streams or ksqlDB</li>
+</ul>
+
+<div class="callout tip">
+  <strong>Tip</strong>
+  Kafka is <em>not</em> a traditional message queue. Unlike RabbitMQ or ActiveMQ,
+  Kafka keeps events around even after they're consumed (configurable retention).
+  This makes it great for replaying data and building event-driven architectures.
+</div>
+
+<h2>Kafka Ecosystem</h2>
+
+<table style="width:100%; border-collapse: collapse; margin:1rem 0;">
+  <thead>
+    <tr style="border-bottom:2px solid var(--border); text-align:left;">
+      <th style="padding:0.5rem 1rem 0.5rem 0;">Component</th>
+      <th style="padding:0.5rem 0;">What it does</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0; white-space:nowrap;"><strong>Kafka Broker</strong></td>
+      <td style="padding:0.5rem 0;">Stores and serves events</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0; white-space:nowrap;"><strong>Kafka Connect</strong></td>
+      <td style="padding:0.5rem 0;">Stream data between Kafka and external systems (DBs, S3, etc.)</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0; white-space:nowrap;"><strong>Kafka Streams</strong></td>
+      <td style="padding:0.5rem 0;">Lightweight stream processing library for Java/Scala apps</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0; white-space:nowrap;"><strong>ksqlDB</strong></td>
+      <td style="padding:0.5rem 0;">Stream processing with SQL syntax</td>
+    </tr>
+    <tr>
+      <td style="padding:0.5rem 1rem 0.5rem 0; white-space:nowrap;"><strong>Schema Registry</strong></td>
+      <td style="padding:0.5rem 0;">Central repository for Avro/Protobuf/JSON schemas</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Where to Next?</h2>
+<p>
+  Now that you understand the big picture, move on to <a href="?tutorial=kafka-topics">Topics & Partitions</a> to see how data is organized in detail.
+</p>
