@@ -32,11 +32,11 @@
     "order": 4
   },
     {
-    "id": "new-tutorial",
-    "title": "New tutorial / TODO",
-    "slug": "new-tutorial",
-    "description": "TODO",
-    "file": "tutorials/kafka-consumers.html",
+    "id": "kafka-connect",
+    "title": "Kafka Connect",
+    "slug": "kafka-connect",
+    "description": "Stream data between Kafka and external systems using pre-built connectors. Source vs sink, worker modes, REST API, and common connectors.",
+    "file": "tutorials/kafka-connect.html",
     "order": 5
   }
 ]

@@ -1,0 +1,169 @@
+<h1>Kafka Connect <span class="badge">New</span></h1>
+
+<p>
+  <strong>Kafka Connect</strong> is a framework for streaming data between Apache Kafka and
+  external systems — databases, key-value stores, search indexes, file systems, and more.
+  Instead of writing custom producer/consumer code for every data source, you use
+  pre-built <strong>connectors</strong> that handle the plumbing.
+</p>
+
+<div class="callout tip">
+  <strong>Why it matters</strong>
+  Most Kafka deployments use Connect to ingest or export data. It's the standard way to
+  integrate Kafka with the rest of your infrastructure.
+</div>
+
+<h2>Core Concepts</h2>
+
+<h3>Connector</h3>
+<p>
+  A connector is a piece of reusable code (a <strong>plugin</strong>) that knows how to
+  talk to a specific system. Examples: JDBC connector for databases, S3 connector for
+  object storage, Elasticsearch connector for search indexing.
+</p>
+
+<h3>Source vs Sink</h3>
+<ul>
+  <li><strong>Source connector</strong> — pulls data <em>from</em> an external system
+    <em>into</em> Kafka. E.g., read rows from PostgreSQL and write them to a topic.</li>
+  <li><strong>Sink connector</strong> — pushes data <em>from</em> Kafka <em>to</em> an
+    external system. E.g., take messages from a topic and index them in Elasticsearch.</li>
+</ul>
+
+<h3>Worker</h3>
+<p>
+  A Kafka Connect <strong>worker</strong> is a JVM process that runs connectors.
+  Workers can run in two modes:
+</p>
+
+<ul>
+  <li><strong>Standalone</strong> — single process, good for development</li>
+  <li><strong>Distributed</strong> — cluster of workers with automatic rebalancing and fault
+    tolerance (production)</li>
+</ul>
+
+<h2>Example: Postgres → Kafka with JDBC Source</h2>
+
+<p>Here's how to stream data from a PostgreSQL table into a Kafka topic:</p>
+
+<pre><code># Connector config (JSON)
+{
+  "name": "postgres-orders",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
+    "connection.url": "jdbc:postgresql://localhost:5432/mydb",
+    "connection.user": "kafka",
+    "connection.password": "password",
+    "table.whitelist": "orders",
+    "mode": "incrementing",
+    "incrementing.column.name": "id",
+    "topic.prefix": "pg-",
+    "poll.interval.ms": 5000
+  }
+}</code></pre>
+
+<div class="callout warn">
+  <strong>Note</strong>
+  The JDBC connector polls the database on an interval. It's not real-time streaming
+  from the DB — for that, look at Change Data Capture (CDC) tools like Debezium.
+</div>
+
+<h2>Using the Connect REST API</h2>
+
+<p>Connect workers expose a REST API on port <code>8083</code> by default:</p>
+
+<pre><code># List connectors
+curl -s http://localhost:8083/connectors | jq .
+
+# Create a connector
+curl -s -X POST http://localhost:8083/connectors \
+  -H "Content-Type: application/json" \
+  -d @connector-config.json
+
+# Check connector status
+curl -s http://localhost:8083/connectors/postgres-orders/status | jq .
+
+# Delete a connector
+curl -s -X DELETE http://localhost:8083/connectors/postgres-orders</code></pre>
+
+<h2>Key Connectors to Know</h2>
+
+<table style="width:100%; border-collapse: collapse; margin:1rem 0;">
+  <thead>
+    <tr style="border-bottom:2px solid var(--border); text-align:left;">
+      <th style="padding:0.5rem 1rem 0.5rem 0;">Connector</th>
+      <th style="padding:0.5rem 0;">Type</th>
+      <th style="padding:0.5rem 0 0.5rem 1rem;">Use Case</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><strong>JDBC Source/Sink</strong></td>
+      <td style="padding:0.5rem 0;">Both</td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">Relational databases (PostgreSQL, MySQL, Oracle)</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><strong>Debezium</strong></td>
+      <td style="padding:0.5rem 0;">Source (CDC)</td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">Change Data Capture from DB transaction logs</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><strong>S3 Sink</strong></td>
+      <td style="padding:0.5rem 0;">Sink</td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">Dump Kafka topics to S3 as Parquet/JSON/Avro</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><strong>Elasticsearch Sink</strong></td>
+      <td style="padding:0.5rem 0;">Sink</td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">Index Kafka messages for search/analytics</td>
+    </tr>
+    <tr>
+      <td style="padding:0.5rem 1rem 0.5rem 0;"><strong>FileStream Source/Sink</strong></td>
+      <td style="padding:0.5rem 0;">Both</td>
+      <td style="padding:0.5rem 0 0.5rem 1rem;">Read/write files (useful for testing)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>Running Locally</h2>
+
+<p>Kafka ships with Connect bundled. To start a standalone worker:</p>
+
+<pre><code># Start a standalone worker with a source connector
+connect-standalone.sh config/connect-standalone.properties \
+  config/connect-file-source.properties</code></pre>
+
+<p>For distributed mode (recommended for anything beyond testing):</p>
+
+<pre><code># Start distributed worker
+connect-distributed.sh config/connect-distributed.properties</code></pre>
+
+<div class="callout tip">
+  <strong>Pro tip</strong>
+  For local development with Docker, use the Confluent images:
+  <code>confluentinc/cp-kafka-connect</code>. They include common connectors
+  and can be configured via environment variables.
+</div>
+
+<h2>Connector Lifecycle</h2>
+
+<p>Connectors have a clear state machine:</p>
+<ol>
+  <li><strong>UNASSIGNED</strong> — created but not yet assigned to a worker</li>
+  <li><strong>RUNNING</strong> — actively processing data</li>
+  <li><strong>PAUSED</strong> — stopped processing but keeps configuration</li>
+  <li><strong>FAILED</strong> — encountered an error (check logs + status)</li>
+</ol>
+
+<p>Pause/resume via the REST API:</p>
+<pre><code># Pause a connector
+curl -X PUT http://localhost:8083/connectors/postgres-orders/pause
+
+# Resume
+curl -X PUT http://localhost:8083/connectors/postgres-orders/resume</code></pre>
+
+<h2>Where to Next?</h2>
+<p>
+  Now that you know how to move data in and out of Kafka, learn how to <em>process</em>
+  it in real-time with <a href="?tutorial=kafka-streams">Kafka Streams</a>.
+</p>
