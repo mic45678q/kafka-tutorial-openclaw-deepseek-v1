@@ -16,6 +16,20 @@
   --sidebar-w: 280px;
 }
 
+/* ── Light Theme ──────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg:        #ffffff;
+  --surface:   #f6f8fa;
+  --surface2:  #e8ecf0;
+  --border:    #d0d7de;
+  --text:      #1f2328;
+  --text-dim:  #656d76;
+  --accent:    #e25a3a;   /* Kafka orange */
+  --accent2:   #0969da;   /* blue accent */
+  --success:   #1a7f37;
+  --code-bg:   #f1f3f5;
+}
+
 html { font-size: 16px; scroll-behavior: smooth; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
@@ -65,6 +79,93 @@ body {
   margin-top: 0.25rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+/* ── Theme Toggle ─────────────────────────────────────────── */
+.theme-toggle-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  z-index: 5;
+}
+
+.theme-toggle-wrap .label {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.theme-toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.3s;
+  border: none;
+  outline: none;
+  flex-shrink: 0;
+}
+
+.theme-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--text);
+  transition: transform 0.3s, background 0.3s;
+}
+
+.theme-toggle.light::after {
+  transform: translateX(20px);
+}
+
+.theme-toggle .icon {
+  position: absolute;
+  top: 4px;
+  font-size: 11px;
+  line-height: 1;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.theme-toggle .icon-sun {
+  left: 5px;
+  color: #fff;
+}
+
+.theme-toggle .icon-moon {
+  right: 5px;
+  color: #fff;
+}
+
+.theme-toggle.light .icon-sun { color: #f5a623; }
+.theme-toggle:not(.light) .icon-moon { color: #9ec3ff; }
+
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+}
+
+.sidebar nav {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 3.5rem;
 }
 
 .sidebar nav { padding: 0 1rem; }
@@ -322,4 +423,18 @@ pre code { background: none; padding: 0; border-radius: 0; }
   }
 
   .landing h1 { font-size: 1.8rem; }
+}
+
+/* ── Mobile: theme toggle inline ─────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar { height: auto; min-height: auto; }
+  .sidebar-inner { height: auto; position: static; display: block; }
+  .sidebar nav { padding-bottom: 0.5rem; }
+  .theme-toggle-wrap {
+    position: static;
+    border-top: none;
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 1.5rem;
+    margin-bottom: 0.5rem;
+  }
 }

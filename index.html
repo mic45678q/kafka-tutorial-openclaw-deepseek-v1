@@ -11,11 +11,20 @@
 
   <!-- ── Sidebar ──────────────────────────────────────────── -->
   <aside class="sidebar">
-    <div class="sidebar-header">
-      <a href="index.html" style="text-decoration:none;"><h1>Kafka Tutorial</h1></a>
-      <div class="subtitle">From Zero to Producer</div>
+    <div class="sidebar-inner">
+      <div class="sidebar-header">
+        <a href="index.html" style="text-decoration:none;"><h1>Kafka Tutorial</h1></a>
+        <div class="subtitle">From Zero to Producer</div>
+      </div>
+      <nav id="sidebar-nav"></nav>
+      <div class="theme-toggle-wrap">
+        <span class="label">Theme</span>
+        <button id="theme-toggle-btn" class="theme-toggle" onclick="window.toggleTheme()" aria-label="Toggle dark/light theme">
+          <span class="icon icon-sun">☀</span>
+          <span class="icon icon-moon">☽</span>
+        </button>
+      </div>
     </div>
-    <nav id="sidebar-nav"></nav>
   </aside>
 
   <!-- ── Main Content ─────────────────────────────────────── -->

@@ -168,6 +168,34 @@
     }
   });
 
+  /* ── Theme Toggle ──────────────────────────────────────────── */
+  const STORAGE_KEY = 'kafka-tutorial-theme';
+
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem(STORAGE_KEY, theme);
+    const btn = document.getElementById('theme-toggle-btn');
+    if (btn) {
+      btn.classList.toggle('light', theme === 'light');
+    }
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  }
+
+  /* Restore saved theme */
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    applyTheme(saved);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    applyTheme('light');
+  }
+
+  /* Expose toggle globally for onclick */
+  window.toggleTheme = toggleTheme;
+
   /* ── Boot ────────────────────────────────────────────────── */
   init();
 })();
