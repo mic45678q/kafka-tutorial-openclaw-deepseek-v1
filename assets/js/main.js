@@ -196,6 +196,74 @@
   /* Expose toggle globally for onclick */
   window.toggleTheme = toggleTheme;
 
+  /* ── Resizable Sidebar ────────────────────────────────────── */
+  const SIDEBAR_W_KEY = 'kafka-tutorial-sidebar-w';
+  const SIDEBAR_MIN   = 180;
+  const SIDEBAR_MAX   = 500;
+
+  function initResize() {
+    const handle = document.getElementById('resize-handle');
+    const sidebar = document.querySelector('.sidebar');
+    if (!handle || !sidebar) return;
+
+    /* Restore saved width */
+    const saved = localStorage.getItem(SIDEBAR_W_KEY);
+    if (saved) {
+      const w = parseInt(saved, 10);
+      if (w >= SIDEBAR_MIN && w <= SIDEBAR_MAX) {
+        sidebar.style.width = w + 'px';
+        document.documentElement.style.setProperty('--sidebar-w', w + 'px');
+      }
+    }
+
+    let startX = 0;
+    let startW = 0;
+
+    function onStart(e) {
+      startX = e.clientX;
+      startW = sidebar.getBoundingClientRect().width;
+      document.body.classList.add('resizing');
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onEnd);
+      /* Touch support */
+      document.addEventListener('touchmove', onTouchMove, { passive: false });
+      document.addEventListener('touchend', onEnd);
+    }
+
+    function onMove(e) {
+      const delta = e.clientX - startX;
+      const newW = Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, startW + delta));
+      sidebar.style.width = newW + 'px';
+      document.documentElement.style.setProperty('--sidebar-w', newW + 'px');
+    }
+
+    function onTouchMove(e) {
+      const touch = e.touches[0];
+      if (touch) {
+        e.preventDefault();
+        const delta = touch.clientX - startX;
+        const newW = Math.max(SIDEBAR_MIN, Math.min(SIDEBAR_MAX, startW + delta));
+        sidebar.style.width = newW + 'px';
+        document.documentElement.style.setProperty('--sidebar-w', newW + 'px');
+      }
+    }
+
+    function onEnd() {
+      document.body.classList.remove('resizing');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onEnd);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onEnd);
+      /* Persist */
+      const w = sidebar.getBoundingClientRect().width;
+      localStorage.setItem(SIDEBAR_W_KEY, Math.round(w));
+    }
+
+    handle.addEventListener('mousedown', onStart);
+    handle.addEventListener('touchstart', onStart, { passive: true });
+  }
+
   /* ── Boot ────────────────────────────────────────────────── */
+  initResize();
   init();
 })();
